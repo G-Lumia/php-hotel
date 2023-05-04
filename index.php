@@ -1,6 +1,8 @@
 <!-- Prima stampate in pagina i dati, senza preoccuparvi dello stile.
 Dopo aggiungete Bootstrap e mostrate le informazioni con una tabella.
-1 - Aggiungere un form ad inizio pagina che tramite una richiesta GET permetta di filtrare gli hotel che hanno un parcheggio.2 - Aggiungere un secondo campo al form che permetta di filtrare gli hotel per voto (es. inserisco 3 ed ottengo tutti gli hotel che hanno un voto di tre stelle o superiore)NOTA: deve essere possibile utilizzare entrambi i filtri contemporaneamente (es. ottenere una lista con hotel che dispongono di parcheggio e che hanno un voto di tre stelle o superiore)
+1 - Aggiungere un form ad inizio pagina che tramite una richiesta GET permetta di filtrare gli hotel che hanno un parcheggio.
+2 - Aggiungere un secondo campo al form che permetta di filtrare gli hotel per voto (es. inserisco 3 ed ottengo tutti gli hotel che hanno un voto di tre stelle o superiore)
+NOTA: deve essere possibile utilizzare entrambi i filtri contemporaneamente (es. ottenere una lista con hotel che dispongono di parcheggio e che hanno un voto di tre stelle o superiore)
 Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gli hotel. -->
 
 
@@ -59,19 +61,65 @@ Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gl
   </head>
 
   <body>
-    <!-- Tabella degli hotel -->
-    <table class="table table-dark">
-        <thead>
-            <tr>
-                <!-- Key degli elementi in $hotels -->
-                <?php foreach(array_keys($hotels[0]) as $keyName) { ?>
-                    <th scope="col"><?php echo strtoupper($keyName) ?></th>
-                <?php } ?>
-            </tr>
-        </thead>
-        <tbody>
-                <!-- Nome degli hotel -->
-                <?php foreach($hotels as $hotel){ ?>
+    <div class="container d-flex flex-column align-items-center">
+        <!-- Tabella degli hotel -->
+        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="GET">
+            <label for="park">Parking avaiable: </label>
+            <select name="park" id="park">
+                <option value="none">Not relevant</option>
+                <option value="1"> Yes </option>
+                <option value="0"> No </option>
+            </select>
+            <select name="rate" id="rate">
+                <option value=""> I don't care </option>
+                <option value="1" > 1 </option>
+                <option value="2"> 2 </option>
+                <option value="3"> 3 </option>
+                <option value="4"> 4 </option>
+                <option value="5"> 5 </option>
+            </select>
+            <input type="submit" name="submit" value="search">
+        </form>
+    
+        <?php 
+            if($_GET['park'] != "none"){
+                $park = $_GET['park'];
+            }
+            if(!empty($_GET['rate'])){
+                $rate = $_GET['rate'];
+            }
+
+            if($_GET['park'] == "none")
+                $filteredHotels = [];
+                foreach($hotels as $hotel){
+                    if((intval($hotel['vote'], 10) >= intval($rate, 10)) && $hotel['parking']==$park){
+                        $filteredHotels[] = $hotel;
+                    }
+            }
+            if(empty($_GET['rate'])){
+                $filteredHotels = [];
+                foreach($hotels as $hotel){
+                    if($hotel['parking']==$park){
+                        $filteredHotels[] = $hotel;
+                    }
+                }
+            }
+
+            if($_GET['park'] == "none" && empty($_GET['rate'])){
+                $filteredHotels = $hotels;
+            }
+        ?>
+        <table class="table table-dark">
+            <thead>
+                <tr>
+                    <!-- Key degli elementi in $hotels -->
+                    <?php foreach(array_keys($hotels[0]) as $keyName) { ?>
+                        <th scope="col"><?php echo strtoupper($keyName) ?></th>
+                    <?php } ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach($filteredHotels as $hotel){ ?>
                         <tr>
                             <td> <?php echo $hotel['name'] ?>  </td>
                             <td> <?php echo $hotel['description'] ?>  </td>
@@ -87,9 +135,10 @@ Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gl
                             <td> <?php echo $hotel['vote'] ?>  </td>
                             <td> <?php echo $hotel['distance_to_center']." km" ?>  </td>
                         </tr>
-                <?php }?>
-        </tbody>
-    </table>
+                    <?php } ?>
+            </tbody>
+        </table>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
   </body>
 </html>
