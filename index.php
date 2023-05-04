@@ -7,7 +7,7 @@ Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gl
 
 
 <?php
-
+    // il vettore contenente gli hotel
     $hotels = [
 
         [
@@ -48,7 +48,54 @@ Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gl
 
     ];
 
-?>
+    // il vettore che conterrà gli hotel filtrati
+    $filteredHotels = [];
+    
+    //viene verificato che i vari GET siano stati settati
+    if(isset($_GET['park']) && isset($_GET['vote'])){
+        //vengono create due variabili per contenere il valore settato
+        $park = $_GET['park'];
+        $vote = $_GET['vote'];
+        // se park e vote hanno un valore diverso da quello iniziale
+        if($park != "none" && $vote!= "1"){
+            foreach($hotels as $hotel){
+                //viene verificato che le key parking e vote di hotel rispettino i parametri di ricerca
+                if($hotel['parking'] == $park && $hotel['vote'] >= $vote){
+                    //hotel viene inserito nell'array filteredHotels
+                    $filteredHotels [] = $hotel;
+                }
+            }
+        }
+        // se soltanto park ha un valore diverso da quello iniziale
+        elseif ($park != "none"){
+            foreach($hotels as $hotel){
+                //viene verificato che la key parking rispetti i parametri di ricerca
+                if($hotel['parking'] == $park){
+                    //hotel viene inserito nell'array filteredHotels
+                    $filteredHotels [] = $hotel;
+                }
+            }
+        }
+        // se soltanto vote ha un valore diverso da quello iniziale
+        elseif ($vote!= "none"){
+            foreach($hotels as $hotel){
+                //viene verificato che la key vote rispetti i parametri di ricerca
+                if($hotel['vote'] >= $vote){
+                    //hotel viene inserito nell'array filteredHotels
+                    $filteredHotels [] = $hotel;
+                }
+            }
+        }
+        //altrimenti, se non vengono inseriti parametri di ricerca, filteredHotels copia i contenuti di hotels
+        else{
+            $filteredHotels = $hotels;
+        }
+    }
+    // altrimenti, se i valori non sono stati settati, filteredHotels copia i contenuti di hotels
+    else{
+        $filteredHotels = $hotels;
+    }
+    ?>
 
 <!doctype html>
 <html lang="en">
@@ -60,55 +107,33 @@ Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gl
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
   </head>
 
-  <body>
-    <div class="container d-flex flex-column align-items-center">
-        <!-- Tabella degli hotel -->
-        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="GET">
-            <label for="park">Parking avaiable: </label>
-            <select name="park" id="park">
-                <option value="none">Not relevant</option>
-                <option value="1"> Yes </option>
-                <option value="0"> No </option>
-            </select>
-            <select name="rate" id="rate">
-                <option value=""> I don't care </option>
-                <option value="1" > 1 </option>
-                <option value="2"> 2 </option>
-                <option value="3"> 3 </option>
-                <option value="4"> 4 </option>
-                <option value="5"> 5 </option>
-            </select>
-            <input type="submit" name="submit" value="search">
+  <body class = "bg-secondary">
+    <div class="container d-flex flex-column align-items-center py-5">
+        <h1 class="text-light"> Hotels Chooser </h1>
+        <!-- form di ricerca -->
+        <form class="my-3 p-3 d-flex flex-column align-items-center gap-3 bg-light rounded" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="GET">
+            <div>
+                <label for="park">Parking avaiable: </label>
+                <select name="park" id="park">
+                    <option value="none">Not relevant</option>
+                    <option value="1"> Yes </option>
+                    <option value="0"> No </option>
+                </select>
+            </div>
+            <div>
+                <label for="vote"> Rating: </label>
+                <select name="vote" id="vote">
+                    <option value="1" > 1 </option>
+                    <option value="2"> 2 </option>
+                    <option value="3"> 3 </option>
+                    <option value="4"> 4 </option>
+                    <option value="5"> 5 </option>
+                </select>
+            </div>
+            <input type="submit" name="submit" value="Search">
         </form>
-    
-        <?php 
-            if($_GET['park'] != "none"){
-                $park = $_GET['park'];
-            }
-            if(!empty($_GET['rate'])){
-                $rate = $_GET['rate'];
-            }
 
-            if($_GET['park'] == "none")
-                $filteredHotels = [];
-                foreach($hotels as $hotel){
-                    if((intval($hotel['vote'], 10) >= intval($rate, 10)) && $hotel['parking']==$park){
-                        $filteredHotels[] = $hotel;
-                    }
-            }
-            if(empty($_GET['rate'])){
-                $filteredHotels = [];
-                foreach($hotels as $hotel){
-                    if($hotel['parking']==$park){
-                        $filteredHotels[] = $hotel;
-                    }
-                }
-            }
-
-            if($_GET['park'] == "none" && empty($_GET['rate'])){
-                $filteredHotels = $hotels;
-            }
-        ?>
+        <!-- creazione della tabella degli hotel -->
         <table class="table table-dark">
             <thead>
                 <tr>
@@ -119,12 +144,14 @@ Se non viene specificato nessun filtro, visualizzare come in precedenza tutti gl
                 </tr>
             </thead>
             <tbody>
+                <!-- vengono inseriti gli hotel filtrati nella tabella -->
                 <?php foreach($filteredHotels as $hotel){ ?>
                         <tr>
                             <td> <?php echo $hotel['name'] ?>  </td>
                             <td> <?php echo $hotel['description'] ?>  </td>
                             <td> 
                                 <?php
+                                // il booleano ' parking' viene gestito per stampare un determianto valore
                                     if($hotel['parking'] == 1) {
                                         echo "Yes";
                                     }
